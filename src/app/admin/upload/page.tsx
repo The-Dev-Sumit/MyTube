@@ -11,6 +11,7 @@ import { uploadToCloudinary } from "@/lib/cloudinary";
 import Image from "next/image";
 import YouTube from "react-youtube";
 import type { YouTubeProps } from "react-youtube";
+import type { YouTubePlayer } from "react-youtube";
 
 export default function UploadPage() {
   const { data: session, status } = useSession();
@@ -116,7 +117,7 @@ export default function UploadPage() {
     setThumbnailKey((prev) => prev + 1);
   }, []);
 
-   function detectYoutubeDuration(player: YT.Player, retries = 10) {
+   function detectYoutubeDuration(player: YouTubePlayer, retries = 10) {
      const seconds = Math.round(player.getDuration());
 
      if (seconds > 0) {
