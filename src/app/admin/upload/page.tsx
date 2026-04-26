@@ -10,8 +10,7 @@ import { CATEGORIES } from "@/types";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import Image from "next/image";
 import YouTube from "react-youtube";
-import type { YouTubeProps } from "react-youtube";
-import type { YouTubePlayer } from "react-youtube";
+import type { YouTubeProps, YouTubePlayer } from "react-youtube";
 
 export default function UploadPage() {
   const { data: session, status } = useSession();
@@ -25,11 +24,9 @@ export default function UploadPage() {
     published: true,
   });
 
-  // ✅ YouTube Video ID
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [youtubeVideoId, setYoutubeVideoId] = useState("");
 
-  // Thumbnail
   const [thumbnailMode, setThumbnailMode] = useState<
     "upload" | "url" | "youtube"
   >("youtube");
@@ -40,8 +37,6 @@ export default function UploadPage() {
 
   const [duration, setDuration] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // ═══════════ HANDLERS ═══════════
 
   const handleFormChange = useCallback(
     (
@@ -59,13 +54,12 @@ export default function UploadPage() {
     [],
   );
 
-  // ✅ YouTube URL se Video ID extract karo
   const extractYoutubeId = useCallback((url: string): string => {
     const patterns = [
       /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
       /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
       /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
-      /^([a-zA-Z0-9_-]{11})$/, // Direct ID
+      /^([a-zA-Z0-9_-]{11})$/,
     ];
 
     for (const pattern of patterns) {
@@ -76,16 +70,14 @@ export default function UploadPage() {
     return "";
   }, []);
 
-  // ✅ YouTube URL paste hone pe
   const handleYoutubeUrlChange = useCallback(
     (url: string) => {
       setYoutubeUrl(url);
       const id = extractYoutubeId(url);
-          setYoutubeVideoId(id);
-          setDuration("")
+      setYoutubeVideoId(id);
+      setDuration("");
 
       if (id) {
-        // ✅ Auto-set YouTube thumbnail
         if (thumbnailMode === "youtube") {
           setThumbnailUrl(`https://img.youtube.com/vi/${id}/maxresdefault.jpg`);
         }
@@ -117,31 +109,27 @@ export default function UploadPage() {
     setThumbnailKey((prev) => prev + 1);
   }, []);
 
-   function detectYoutubeDuration(player: YouTubePlayer, retries = 10) {
-     const seconds = Math.round(player.getDuration());
+  function detectYoutubeDuration(player: YouTubePlayer, retries = 10) {
+    const seconds = Math.round(player.getDuration());
 
-     if (seconds > 0) {
-       setDuration(String(seconds));
-       toast.success("Duration auto detected!");
-       return;
-     }
+    if (seconds > 0) {
+      setDuration(String(seconds));
+      toast.success("Duration auto detected!");
+      return;
+    }
 
-     if (retries > 0) {
-       setTimeout(() => detectYoutubeDuration(player, retries - 1), 1000);
-     }
-   }
+    if (retries > 0) {
+      setTimeout(() => detectYoutubeDuration(player, retries - 1), 1000);
+    }
+  }
 
-    const handleYoutubeReady: YouTubeProps["onReady"] = (event) => {
-      detectYoutubeDuration(event.target);
-    };
+  const handleYoutubeReady: YouTubeProps["onReady"] = (event) => {
+    detectYoutubeDuration(event.target);
+  };
 
-    const handleYoutubeError: YouTubeProps["onError"] = () => {
-      toast.error(
-        "YouTube video load nahi hui. Check URL / embeddable setting.",
-      );
-    };
-
-  // ═══════════ SUBMIT ═══════════
+  const handleYoutubeError: YouTubeProps["onError"] = () => {
+    toast.error("YouTube video load nahi hui. Check URL / embeddable setting.");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,11 +149,6 @@ export default function UploadPage() {
       return;
     }
 
-    if (thumbnailMode === "youtube" && !youtubeVideoId) {
-      toast.error("Valid YouTube video required for thumbnail");
-      return;
-    }
-
     if (thumbnailMode === "upload" && !thumbnailFile) {
       toast.error("Thumbnail file is required");
       return;
@@ -179,13 +162,10 @@ export default function UploadPage() {
     setIsSubmitting(true);
 
     try {
-      // ✅ Thumbnail upload
       let finalThumbnailUrl = thumbnailUrl;
 
       if (thumbnailMode === "youtube" && youtubeVideoId) {
-        
         finalThumbnailUrl = `https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg`;
-        
       }
 
       if (thumbnailMode === "upload" && thumbnailFile) {
@@ -199,13 +179,12 @@ export default function UploadPage() {
         toast.success("Thumbnail uploaded!", { id: "thumb" });
       }
 
-        if (!finalThumbnailUrl) {
-          toast.error("Thumbnail required");
-          setIsSubmitting(false);
-          return;
-        }
+      if (!finalThumbnailUrl) {
+        toast.error("Thumbnail required");
+        setIsSubmitting(false);
+        return;
+      }
 
-      // ✅ Save to database
       const response = await axios.post("/api/admin/videos", {
         title: formData.title.trim(),
         description: formData.description.trim(),
@@ -223,7 +202,6 @@ export default function UploadPage() {
       if (response.status === 201) {
         toast.success("Video added successfully!");
 
-        // Reset
         setFormData({
           title: "",
           description: "",
@@ -250,8 +228,6 @@ export default function UploadPage() {
     }
   };
 
-  // ═══════════ AUTH ═══════════
-
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center pt-20">
@@ -268,8 +244,6 @@ export default function UploadPage() {
     );
   }
 
-  // ═══════════ UI ═══════════
-
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 px-4 py-8 pt-24">
       <div className="max-w-2xl mx-auto">
@@ -279,12 +253,9 @@ export default function UploadPage() {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* ═══════════ YOUTUBE URL ═══════════ */}
+          {/* YouTube URL */}
           <div className="bg-zinc-50 dark:bg-zinc-900 p-6 rounded-xl">
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              YouTube Video
-            </h2>
-
+            <h2 className="text-lg font-bold mb-4">YouTube Video</h2>
             <div>
               <label className="block text-sm font-semibold mb-2">
                 YouTube URL or Video ID *
@@ -304,14 +275,11 @@ export default function UploadPage() {
                 />
               </div>
 
-              {/* ✅ Status */}
               {youtubeVideoId ? (
                 <div className="mt-2">
                   <p className="text-xs text-green-500">
-                    ✅ Video ID: {youtubeVideoId}
+                    Video ID: {youtubeVideoId}
                   </p>
-
-                  {/* ✅ Live Preview */}
                   <div className="mt-3 rounded-lg overflow-hidden border border-zinc-700">
                     <YouTube
                       videoId={youtubeVideoId}
@@ -332,16 +300,14 @@ export default function UploadPage() {
                   </div>
                 </div>
               ) : youtubeUrl ? (
-                <p className="text-xs text-red-500 mt-1">
-                  ❌ Invalid YouTube URL
-                </p>
+                <p className="text-xs text-red-500 mt-1">Invalid YouTube URL</p>
               ) : null}
             </div>
           </div>
 
-          {/* ═══════════ BASIC INFO ═══════════ */}
+          {/* Video Details */}
           <div className="space-y-4 bg-zinc-50 dark:bg-zinc-900 p-6 rounded-xl">
-            <h2 className="text-lg font-bold">📝 Video Details</h2>
+            <h2 className="text-lg font-bold">Video Details</h2>
 
             <div>
               <label className="block text-sm font-semibold mb-2">
@@ -411,9 +377,9 @@ export default function UploadPage() {
             </div>
           </div>
 
-          {/* ═══════════ DURATION ═══════════ */}
+          {/* Duration */}
           <div className="bg-zinc-50 dark:bg-zinc-900 p-6 rounded-xl">
-            <h2 className="text-lg font-bold mb-4">⏱️ Duration</h2>
+            <h2 className="text-lg font-bold mb-4">Duration</h2>
             <div>
               <label className="block text-sm font-semibold mb-2">
                 Duration (seconds) *
@@ -435,9 +401,9 @@ export default function UploadPage() {
             </div>
           </div>
 
-          {/* ═══════════ THUMBNAIL ═══════════ */}
+          {/* Thumbnail */}
           <div className="bg-zinc-50 dark:bg-zinc-900 p-6 rounded-xl">
-            <h2 className="text-lg font-bold mb-4">🖼️ Thumbnail *</h2>
+            <h2 className="text-lg font-bold mb-4">Thumbnail *</h2>
 
             <div className="flex gap-2 mb-4">
               <button
@@ -455,7 +421,7 @@ export default function UploadPage() {
                     ? "bg-red-500 text-white"
                     : "bg-gray-200 dark:bg-zinc-700"
                 }`}>
-                ▶️ YouTube Auto
+                YouTube Auto
               </button>
               <button
                 type="button"
@@ -465,7 +431,7 @@ export default function UploadPage() {
                     ? "bg-blue-600 text-white"
                     : "bg-gray-200 dark:bg-zinc-700"
                 }`}>
-                📤 Upload
+                Upload
               </button>
               <button
                 type="button"
@@ -475,11 +441,10 @@ export default function UploadPage() {
                     ? "bg-blue-600 text-white"
                     : "bg-gray-200 dark:bg-zinc-700"
                 }`}>
-                🔗 URL
+                URL
               </button>
             </div>
 
-            {/* YouTube Auto Thumbnail */}
             {thumbnailMode === "youtube" && (
               <div>
                 {youtubeVideoId ? (
@@ -492,13 +457,12 @@ export default function UploadPage() {
                       unoptimized
                       className="w-full rounded-lg"
                       onError={(e) => {
-                        // Fallback to hqdefault
                         (e.target as HTMLImageElement).src =
                           `https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg`;
                       }}
                     />
                     <p className="text-xs text-green-500 mt-2">
-                      ✅ YouTube thumbnail auto-selected
+                      YouTube thumbnail auto-selected
                     </p>
                   </div>
                 ) : (
@@ -509,7 +473,6 @@ export default function UploadPage() {
               </div>
             )}
 
-            {/* Upload */}
             {thumbnailMode === "upload" && (
               <>
                 <input
@@ -552,7 +515,6 @@ export default function UploadPage() {
               </>
             )}
 
-            {/* URL */}
             {thumbnailMode === "url" && (
               <>
                 <input
@@ -567,6 +529,8 @@ export default function UploadPage() {
                     src={thumbnailUrl}
                     alt="Preview"
                     unoptimized
+                    width={320}
+                    height={180}
                     className="mt-3 h-32 rounded object-cover"
                     onError={(e) =>
                       ((e.target as HTMLImageElement).style.display = "none")
@@ -577,7 +541,7 @@ export default function UploadPage() {
             )}
           </div>
 
-          {/* ═══════════ PUBLISH ═══════════ */}
+          {/* Publish */}
           <div className="bg-zinc-50 dark:bg-zinc-900 p-6 rounded-xl">
             <label className="flex items-center justify-between cursor-pointer">
               <div className="flex items-center gap-3">
@@ -605,7 +569,7 @@ export default function UploadPage() {
             </label>
           </div>
 
-          {/* ═══════════ SUBMIT ═══════════ */}
+          {/* Submit */}
           <button
             type="submit"
             disabled={isSubmitting}
