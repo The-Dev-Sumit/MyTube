@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import VideoCard from "@/components/VideoCard";
@@ -8,7 +9,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 
-export default function Home() {
+function Home() {
   const searchParams = useSearchParams();
   const search = searchParams.get("search") || "";
   const category = searchParams.get("category") || "all";
@@ -31,7 +32,7 @@ export default function Home() {
           },
         });
 
-        setVideos(page === 1 ? data.data : [...videos, ...data.data]);
+        setVideos((prev) => (page === 1 ? data.data : [...prev, ...data.data]));
         setHasMore(data.pages > page);
       } catch (error: any) {
         toast.error("Failed to load videos");
@@ -46,7 +47,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950">
-      {/* Category Filters */}
       <div className="sticky top-1 bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 z-40 overflow-x-auto">
         <div className="flex gap-3 px-4 py-3 max-w-full">
           {CATEGORIES.map((cat) => (
@@ -105,6 +105,24 @@ export default function Home() {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+export default function HomeContent() {
+  return (
+    <div className="min-h-screen bg-white dark:bg-zinc-950">
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center">
+            <Loader2
+              size={40}
+              className="animate-spin text-gray-600 dark:text-gray-400"
+            />
+          </div>
+        }>
+        <Home />
+      </Suspense>
     </div>
   );
 }
