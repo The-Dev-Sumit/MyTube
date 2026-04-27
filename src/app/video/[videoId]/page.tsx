@@ -19,6 +19,7 @@ import Image from "next/image";
 import CommentSection from "@/components/CommentSection";
 import SubscribeButton from "@/components/SubscribeButton";
 import Link from "next/link";
+import { parseLinks } from "@/utils/parseLink";
 
 interface PageProps {
   params: Promise<{ videoId: string }>;
@@ -292,7 +293,7 @@ export default function WatchPage({ params }: PageProps) {
                     <span
                       key={tag}
                       className="shrink-0 text-xs bg-gray-100 dark:bg-zinc-800 px-3 py-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-zinc-700 cursor-pointer transition">
-                      #{tag}
+                      {tag}
                     </span>
                   ))}
                 </div>
@@ -301,10 +302,12 @@ export default function WatchPage({ params }: PageProps) {
               {/* Description */}
               <div className="bg-gray-50 dark:bg-zinc-900 p-4 rounded-xl">
                 <div
-                  className={`text-sm leading-relaxed text-gray-700 dark:text-gray-300 ${
+                  className={`text-sm leading-relaxed whitespace-break-spaces text-gray-700 dark:text-gray-300 ${
                     !showDescription ? "line-clamp-2" : ""
                   }`}>
-                  {video.description || "No description available"}
+                  {video.description
+                    ? parseLinks(video.description)
+                    : "No description available"}
                 </div>
                 <button
                   onClick={() => setShowDescription(!showDescription)}

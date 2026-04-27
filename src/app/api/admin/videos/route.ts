@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       duration: body.duration || 0,
       category: body.category || "tech",
       tags: body.tags || [],
-      youtubeVideoId: body.youtubeVideoId, // ✅ Correct field
+      youtubeVideoId: body.youtubeVideoId, 
       published: body.published || false,
       views: 0,
       likes: 0,
@@ -104,7 +104,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: error.message,
-        // ✅ MongoDB validation errors bhi dikhao
         details: error.errors || null,
       },
       { status: 500 },
