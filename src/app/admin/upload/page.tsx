@@ -187,7 +187,7 @@ export default function UploadPage() {
 
       const response = await axios.post("/api/admin/videos", {
         title: formData.title.trim(),
-        description: formData.description.trim(),
+        description: formData.description,
         category: formData.category,
         tags: formData.tags
           .split(",")

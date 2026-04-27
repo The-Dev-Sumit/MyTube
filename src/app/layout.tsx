@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Provider from "@/components/Provider";
 import InstallApp from "@/components/InstallApp";
+import DevtoolsBlock from "@/components/DevtoolsBlock";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -51,6 +52,7 @@ export default function RootLayout({
         <Provider>
           <div className="min-h-screen bg-white dark:bg-zinc-950">
             <Header />
+            <DevtoolsBlock />
             <main className="pt-16">{children}</main>
           </div>
         </Provider>
